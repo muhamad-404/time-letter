@@ -22,8 +22,9 @@ function startClock(config) {
 
 async function startApp() {
   setupViewport();
-  bindViewportResize();
   initContent(CONFIG);
+  await nextFrame();
+  applyStageSize();
 
   const mobile = isMobileLayout();
   const treeShape = getTreeShape(StageConfig.width, StageConfig.height, mobile);
@@ -31,6 +32,7 @@ async function startApp() {
   const staticCanvas = initCanvas("static-canvas");
   const groundCanvas = initCanvas("ground-canvas");
   const dynamicCanvas = initCanvas("canvas");
+  const tapHeart = document.getElementById("tap-heart");
 
   const tree = new Tree(
     staticCanvas,
@@ -43,9 +45,10 @@ async function startApp() {
   );
   const { seed, footer } = tree;
 
+  bindViewportResize();
   seed.draw();
 
-  await waitForUserClick(seed, dynamicCanvas);
+  await waitForUserClick(seed, dynamicCanvas, tapHeart);
   await animateSeedShrink(seed);
   await animateSeedMove(seed, footer);
   await animateTreeGrow(tree);

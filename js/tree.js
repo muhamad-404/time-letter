@@ -89,10 +89,10 @@ function getTreeShape(width, height, mobile) {
 
   return {
     seed: {
-      x: width / 2 - 20 * sx,
-      y: mobile ? height * 0.38 : height / 2 - 40,
+      x: width / 2,
+      y: mobile ? height * 0.5 : height / 2 - 40,
       color: "rgb(190, 26, 37)",
-      scale: mobile ? 1.5 : 2
+      scale: mobile ? 1.8 : 2
     },
     branches: BASE_TREE_BRANCHES.map((branch) => scaleBranch(branch, sx, sy)),
     bloom: {

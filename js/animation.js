@@ -77,21 +77,45 @@ function getCanvasPoint(event, canvas) {
   );
 }
 
-async function waitForUserClick(seed, canvas) {
+async function waitForUserClick(seed, canvas, tapButton) {
   return new Promise((resolve) => {
-    function handler(e) {
-      if (e.type === "touchstart") e.preventDefault();
-      const point = getCanvasPoint(e, canvas);
-      if (seed.hover(point.x, point.y)) {
-        document.getElementById("bgm").play().catch(() => {});
-        canvas.removeEventListener("click", handler);
-        canvas.removeEventListener("touchstart", handler);
-        resolve();
+    function start() {
+      document.getElementById("bgm").play().catch(() => {});
+      cleanup();
+      resolve();
+    }
+
+    function cleanup() {
+      canvas.removeEventListener("click", canvasHandler);
+      canvas.removeEventListener("touchstart", canvasHandler);
+      if (tapButton) {
+        tapButton.removeEventListener("click", start);
+        tapButton.removeEventListener("touchstart", touchStart);
+        tapButton.hidden = true;
       }
     }
 
-    canvas.addEventListener("click", handler);
-    canvas.addEventListener("touchstart", handler, { passive: false });
+    function canvasHandler(e) {
+      if (e.type === "touchstart") e.preventDefault();
+      const point = getCanvasPoint(e, canvas);
+      if (seed.hover(point.x, point.y)) {
+        start();
+      }
+    }
+
+    function touchStart(e) {
+      e.preventDefault();
+      start();
+    }
+
+    if (tapButton && isMobileLayout()) {
+      tapButton.hidden = false;
+      tapButton.addEventListener("click", start);
+      tapButton.addEventListener("touchstart", touchStart, { passive: false });
+    }
+
+    canvas.addEventListener("click", canvasHandler);
+    canvas.addEventListener("touchstart", canvasHandler, { passive: false });
   });
 }
 

@@ -19,6 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script>document.documentElement.classList.add("mobile");</script>
   <script src="config.js"></script>
 </head>
 <body>
@@ -30,23 +31,22 @@
   <!-- Main Container -->
   <div id="viewport">
     <div id="main">
-      <!-- Love Letter Content -->
+      <div id="canvas-wrap">
+        <canvas id="ground-canvas" aria-hidden="true"></canvas>
+        <canvas id="static-canvas" aria-hidden="true"></canvas>
+        <canvas id="canvas" aria-label="شجرة متحركة مع قلوب"></canvas>
+        <button id="tap-heart" type="button" hidden>
+          <span class="tap-heart-icon" aria-hidden="true">❤</span>
+          <span class="tap-heart-text">اضغط على القلب</span>
+        </button>
+      </div>
+
       <div id="letter" role="article"></div>
-      
-      <!-- Time Counter -->
+
       <div id="clock-box" role="timer">
         <div id="clock-text"></div>
         <div id="clock"></div>
       </div>
-      
-      <!-- Ground Canvas -->
-      <canvas id="ground-canvas" aria-hidden="true"></canvas>
-
-      <!-- Static Canvas (tree) -->
-      <canvas id="static-canvas" aria-hidden="true"></canvas>
-
-      <!-- Dynamic Canvas (falling hearts) -->
-      <canvas id="canvas" aria-label="شجرة متحركة مع قلوب"></canvas>
     </div>
   </div>
   

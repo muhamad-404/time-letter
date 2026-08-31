@@ -75,6 +75,22 @@ function isMobileLayout() {
   return window.innerWidth <= MOBILE_BREAKPOINT;
 }
 
+function getCanvasSize() {
+  const wrap = document.getElementById("canvas-wrap");
+  if (!wrap) {
+    return {
+      width: window.innerWidth,
+      height: Math.floor(window.innerHeight * 0.42)
+    };
+  }
+
+  const rect = wrap.getBoundingClientRect();
+  return {
+    width: Math.max(1, Math.floor(rect.width) || window.innerWidth),
+    height: Math.max(1, Math.floor(rect.height) || Math.floor(window.innerHeight * 0.42))
+  };
+}
+
 function setupViewport() {
   const viewport = document.getElementById("viewport");
   const main = document.getElementById("main");
@@ -85,36 +101,21 @@ function setupViewport() {
   root.classList.toggle("desktop", !mobile);
 
   if (mobile) {
-    const canvasHeight = Math.floor(window.innerHeight * 0.45);
-    StageConfig.width = window.innerWidth;
-    StageConfig.height = canvasHeight;
-
-    root.style.setProperty("--stage-w", "100vw");
-    root.style.setProperty("--stage-h", "100svh");
-    root.style.setProperty("--canvas-h", `${canvasHeight}px`);
-    root.style.setProperty("--tree-shift-x", "0");
-    root.style.setProperty("--letter-width", "100%");
+    root.style.setProperty("--canvas-h", "42svh");
     root.style.setProperty("--clock-digit-size", "32px");
     root.style.setProperty("--clock-font-size", "18px");
 
-    viewport.style.width = "100vw";
+    viewport.style.width = "100%";
     viewport.style.height = "100svh";
     main.style.transform = "none";
-    main.style.width = "100vw";
+    main.style.width = "100%";
     main.style.height = "100svh";
   } else {
-    StageConfig.width = BASE_STAGE.width;
-    StageConfig.height = BASE_STAGE.height;
-
-    root.style.setProperty("--stage-w", "1100px");
-    root.style.setProperty("--stage-h", "680px");
-    root.style.setProperty("--canvas-h", "680px");
-    root.style.setProperty("--tree-shift-x", "-260px");
-    root.style.setProperty("--letter-width", "450px");
-    root.style.setProperty("--letter-right", "60px");
     root.style.setProperty("--clock-digit-size", "44px");
     root.style.setProperty("--clock-font-size", "24px");
-    root.style.setProperty("--clock-top", "530px");
+
+    StageConfig.width = BASE_STAGE.width;
+    StageConfig.height = BASE_STAGE.height;
 
     const scale = Math.min(
       window.innerWidth / BASE_STAGE.width,
@@ -130,11 +131,25 @@ function setupViewport() {
   }
 }
 
+function applyStageSize() {
+  if (isMobileLayout()) {
+    const size = getCanvasSize();
+    StageConfig.width = size.width;
+    StageConfig.height = size.height;
+  } else {
+    StageConfig.width = BASE_STAGE.width;
+    StageConfig.height = BASE_STAGE.height;
+  }
+}
+
 function bindViewportResize() {
   window.addEventListener("resize", setupViewport);
   window.addEventListener("orientationchange", () => {
-    setTimeout(setupViewport, 100);
+    setTimeout(setupViewport, 150);
   });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", setupViewport);
+  }
 }
 
 // ===========================
@@ -187,10 +202,10 @@ function initCanvas(id) {
   const w = StageConfig.width;
   const h = StageConfig.height;
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  canvas.style.width = w + "px";
-  canvas.style.height = h + "px";
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
   const ctx = canvas.getContext("2d");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(dpr, dpr);
