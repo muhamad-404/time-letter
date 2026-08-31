@@ -130,8 +130,13 @@ function animateFlowerBloom(tree) {
   );
 }
 
-async function animateTreeMove(staticCanvas) {
-  staticCanvas.classList.add("shifted");
+async function animateTreeMove(staticCanvas, dynamicCanvas) {
+  if (document.documentElement.classList.contains("mobile")) {
+    staticCanvas.classList.add("shifted-mobile");
+    dynamicCanvas.classList.add("shifted-mobile");
+  } else {
+    staticCanvas.classList.add("shifted");
+  }
   await wait(AnimationConfig.TREE_MOVE_DURATION);
 }
 

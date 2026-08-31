@@ -2,73 +2,115 @@
 // Stage & Tree Configuration
 // ===========================
 
+const BASE_STAGE = { width: 1100, height: 680 };
+
 const StageConfig = {
-  width: 1100,
-  height: 680
+  width: BASE_STAGE.width,
+  height: BASE_STAGE.height
 };
 
 const TreeRenderConfig = {
   radiusDecay: 0.97
 };
 
-const TreeShape = {
-  seed: { x: StageConfig.width / 2 - 20, color: "rgb(190, 26, 37)", scale: 2 },
-  branches: [
-    {
-      from: [535, 680],
-      control: [570, 250],
-      to: [500, 200],
-      radius: 30,
-      steps: 100,
-      children: [
-        {
-          from: [540, 500],
-          control: [455, 417],
-          to: [340, 400],
-          radius: 13,
-          steps: 100,
-          children: [
-            { from: [450, 435], control: [434, 430], to: [394, 395], radius: 2, steps: 40 }
-          ]
-        },
-        {
-          from: [550, 445],
-          control: [600, 356],
-          to: [680, 345],
-          radius: 12,
-          steps: 100,
-          children: [
-            { from: [578, 400], control: [648, 409], to: [661, 426], radius: 3, steps: 80 }
-          ]
-        },
-        { from: [539, 281], control: [537, 248], to: [534, 217], radius: 3, steps: 40 },
-        {
-          from: [546, 397],
-          control: [413, 247],
-          to: [328, 244],
-          radius: 9,
-          steps: 80,
-          children: [
-            { from: [427, 286], control: [383, 253], to: [371, 205], radius: 2, steps: 40 },
-            { from: [498, 345], control: [435, 315], to: [395, 330], radius: 4, steps: 60 }
-          ]
-        },
-        {
-          from: [546, 357],
-          control: [608, 252],
-          to: [678, 221],
-          radius: 6,
-          steps: 100,
-          children: [
-            { from: [590, 293], control: [646, 277], to: [648, 271], radius: 2, steps: 80 }
-          ]
-        }
-      ]
-    }
-  ],
-  bloom: { num: 700, width: 1080, height: 650 },
-  footer: { width: 1200, height: 5, speed: 10 }
-};
+const BASE_TREE_BRANCHES = [
+  {
+    from: [535, 680],
+    control: [570, 250],
+    to: [500, 200],
+    radius: 30,
+    steps: 100,
+    children: [
+      {
+        from: [540, 500],
+        control: [455, 417],
+        to: [340, 400],
+        radius: 13,
+        steps: 100,
+        children: [
+          { from: [450, 435], control: [434, 430], to: [394, 395], radius: 2, steps: 40 }
+        ]
+      },
+      {
+        from: [550, 445],
+        control: [600, 356],
+        to: [680, 345],
+        radius: 12,
+        steps: 100,
+        children: [
+          { from: [578, 400], control: [648, 409], to: [661, 426], radius: 3, steps: 80 }
+        ]
+      },
+      { from: [539, 281], control: [537, 248], to: [534, 217], radius: 3, steps: 40 },
+      {
+        from: [546, 397],
+        control: [413, 247],
+        to: [328, 244],
+        radius: 9,
+        steps: 80,
+        children: [
+          { from: [427, 286], control: [383, 253], to: [371, 205], radius: 2, steps: 40 },
+          { from: [498, 345], control: [435, 315], to: [395, 330], radius: 4, steps: 60 }
+        ]
+      },
+      {
+        from: [546, 357],
+        control: [608, 252],
+        to: [678, 221],
+        radius: 6,
+        steps: 100,
+        children: [
+          { from: [590, 293], control: [646, 277], to: [648, 271], radius: 2, steps: 80 }
+        ]
+      }
+    ]
+  }
+];
+
+function scaleCoord([x, y], sx, sy) {
+  return [x * sx, y * sy];
+}
+
+function scaleBranch(branch, sx, sy) {
+  const scale = Math.min(sx, sy);
+  return {
+    from: scaleCoord(branch.from, sx, sy),
+    control: scaleCoord(branch.control, sx, sy),
+    to: scaleCoord(branch.to, sx, sy),
+    radius: branch.radius * scale,
+    steps: branch.steps,
+    children: (branch.children || []).map((child) => scaleBranch(child, sx, sy))
+  };
+}
+
+function getTreeShape(width, height, mobile) {
+  const sx = width / BASE_STAGE.width;
+  const sy = height / BASE_STAGE.height;
+
+  return {
+    seed: {
+      x: width / 2 - 20 * sx,
+      y: mobile ? height * 0.38 : height / 2 - 40,
+      color: "rgb(190, 26, 37)",
+      scale: mobile ? 1.5 : 2
+    },
+    branches: BASE_TREE_BRANCHES.map((branch) => scaleBranch(branch, sx, sy)),
+    bloom: {
+      num: mobile ? 300 : 700,
+      width: width * 0.98,
+      height: height * 0.95
+    },
+    footer: { width: width * 1.1, height: 5, speed: mobile ? 6 : 10 }
+  };
+}
+
+function resizeStage(width, height) {
+  StageConfig.width = width;
+  StageConfig.height = height;
+}
+
+// Legacy alias used by tree shift helper
+const TreeShape = getTreeShape(BASE_STAGE.width, BASE_STAGE.height, false);
 
 // ===========================
 // Seed — the initial clickable heart
@@ -328,6 +370,9 @@ class Bloom {
 // ===========================
 
 function getTreeShiftX() {
+  if (document.documentElement.classList.contains("mobile")) {
+    return 0;
+  }
   const value = getComputedStyle(document.documentElement).getPropertyValue("--tree-shift-x");
   return parseFloat(value) || AnimationConfig.TREE_SHIFT_X;
 }
@@ -424,9 +469,11 @@ class Tree {
 
   createFallingBloom() {
     const figure = this.seed.heart.figure;
+    const mobile = document.documentElement.classList.contains("mobile");
+    const shiftX = getTreeShiftX();
     const crown = {
-      x: this.width / 2 + getTreeShiftX(),
-      y: this.height * 0.42
+      x: this.width / 2 + shiftX,
+      y: this.height * (mobile ? 0.35 : 0.42)
     };
     const bloom = new Bloom(
       this,
@@ -468,3 +515,4 @@ class Tree {
     }
   }
 }
+

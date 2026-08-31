@@ -21,7 +21,12 @@ function startClock(config) {
 // ===========================
 
 async function startApp() {
+  setupViewport();
+  bindViewportResize();
   initContent(CONFIG);
+
+  const mobile = isMobileLayout();
+  const treeShape = getTreeShape(StageConfig.width, StageConfig.height, mobile);
 
   const staticCanvas = initCanvas("static-canvas");
   const groundCanvas = initCanvas("ground-canvas");
@@ -33,12 +38,10 @@ async function startApp() {
     groundCanvas,
     StageConfig.width,
     StageConfig.height,
-    TreeShape,
+    treeShape,
     CONFIG
   );
   const { seed, footer } = tree;
-
-  scaleContent();
 
   seed.draw();
 
@@ -50,7 +53,7 @@ async function startApp() {
   tree.resetFallingBlooms();
 
   footer.draw();
-  await animateTreeMove(staticCanvas);
+  await animateTreeMove(staticCanvas, dynamicCanvas);
 
   showLoveLetter();
   startHeartJumpAnimation(tree);
